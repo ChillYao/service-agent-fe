@@ -5,34 +5,40 @@ import { Link } from "react-router-dom";
 
 interface Job {
   id: string;
-  jobName: string;
-  submissionDate: string;
-  execution: string;
+  name: string;
+  submittedTime: string;
+  executionTime: string;
   status: string;
 }
 
 const StatusPage = () => {
   // Fetching jobs data from the API using react-query
-  const { data, error, isLoading } = useQuery<Job[]>(["jobs"], async () => {
-    const response = await axios.get("/api/jobs"); // Replace with API endpoint
-    return response.data;
+  const { data, error, isLoading } = useQuery<Job[]>({
+    queryKey: ["jobs"], // Use an options object
+    queryFn: async () => {
+      const response = await axios.get("http://localhost:3000/jobs"); // Replace with API endpoint
+      return response.data;
+    },
   });
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error fetching jobs</p>;
 
+  // Ensure data is an array before calling map
+  const jobs = Array.isArray(data) ? data : [];
+
   return (
     <Table>
-      {data.map((job: Job) => (
+      {jobs?.map((job: Job) => (
         <TableRow key={job.id}>
-          <TableCell>{job.jobName}</TableCell>
-          <TableCell>{job.submissionDate}</TableCell>
+          <TableCell>{job.name}</TableCell>
+          <TableCell>{job.submittedTime}</TableCell>
           <TableCell>{job.status}</TableCell>
           <TableCell>
             <Button
               variant="contained"
               component={Link}
-              to={`/request/${job.id}`}
+              to={`/details/${job.id}`}
             >
               Details
             </Button>
